@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from minipytorch3d.cameras import CamerasBase, PerspectiveCameras
+from pytorch3d.renderer.cameras import CamerasBase, PerspectiveCameras
 
 # from pytorch3d.renderer.cameras import CamerasBase, PerspectiveCameras
 # from pytorch3d.transforms import se3_exp_map, se3_log_map, Transform3d, so3_relative_angle

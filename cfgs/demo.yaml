@@ -18,27 +18,27 @@ extract_color: True
 filter_invalid_frame: True
 
 comple_nonvis: True
-query_frame_num: 3
+query_frame_num: 2
 robust_refine: 2
 BA_iters: 1
 
 fine_tracking: True
 
-camera_type: "SIMPLE_PINHOLE"   # optional: ["SIMPLE_PINHOLE", "SIMPLE_RADIAL"]
+camera_type: "SIMPLE_RADIAL"   # optional: ["SIMPLE_PINHOLE", "SIMPLE_RADIAL"]
 
 load_gt: False
-viz_visualize: False
-gr_visualize: False
+viz_visualize: True
+gr_visualize: True
 
 fmat_thres: 4.0
 max_reproj_error: 4.0
 init_max_reproj_error: 4.0
-max_query_pts: 2048
+max_query_pts: 256
 
 dense_depth: False
 
 avg_pose: True
-shared_camera: False
+shared_camera: True
 
 save_to_disk: True
 SCENE_DIR: examples/kitchen
@@ -54,7 +54,7 @@ shift_point2d_to_original_res: False
 
 make_reproj_video: False
 
-visual_tracks: False
+visual_tracks: True
 visual_query_points: False
 visual_dense_point_cloud: False
 

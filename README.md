@@ -1,3 +1,19 @@
+## Pasos para la instalación
+
+1. Clonar el repositorio y abrir en Visual Studio
+
+2. Reopen in Container
+
+3. Una vez instalado, seguir los comandos
+
+```bash
+git clone https://github.com/facebookresearch/pytorch3d.git
+
+cd pytorch3d && pip install -e . 
+```
+
+En la carpeta `examples` están las imágenes de la habitación de hotel: `frames` contiene más de 100 imágenes y `hotel` unas 40. Para mi gráfica, sólo podía obtener visualizaciones para el segundo caso.
+
 # VGGSfM: Visual Geometry Grounded Deep Structure From Motion
 
 

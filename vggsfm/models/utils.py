@@ -16,10 +16,10 @@ from typing import Optional, Tuple, Union
 from einops import rearrange, repeat
 
 
-from minipytorch3d.harmonic_embedding import HarmonicEmbedding
+from pytorch3d.renderer.implicit.harmonic_embedding import HarmonicEmbedding
 
-from minipytorch3d.cameras import CamerasBase, PerspectiveCameras
-from minipytorch3d.rotation_conversions import (
+from pytorch3d.renderer.cameras import CamerasBase, PerspectiveCameras
+from pytorch3d.transforms.rotation_conversions import (
     matrix_to_quaternion,
     quaternion_to_matrix,
 )

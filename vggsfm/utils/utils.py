@@ -19,7 +19,7 @@ from tqdm import tqdm
 from .metric import closed_form_inverse, closed_form_inverse_OpenCV
 
 from scipy.spatial.transform import Rotation as sciR
-from minipytorch3d.cameras import CamerasBase, PerspectiveCameras
+from pytorch3d.renderer.cameras import CamerasBase, PerspectiveCameras
 
 
 def average_camera_prediction(

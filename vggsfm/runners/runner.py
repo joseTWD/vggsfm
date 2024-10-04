@@ -44,7 +44,10 @@ from vggsfm.utils.utils import (
 
 from vggsfm.utils.triangulation import triangulate_tracks
 from vggsfm.utils.triangulation_helpers import cam_from_img, filter_all_points3D
-
+from pytorch3d.structures import Pointclouds
+from pytorch3d.vis.plotly_vis import plot_scene
+from pytorch3d.renderer.cameras import (
+    PerspectiveCameras as PerspectiveCamerasVisual)
 
 # Optional imports
 try:
@@ -57,14 +60,8 @@ try:
 except:
     print("Poselib is not installed. Please disable use_poselib")
 
-try:
-    from pytorch3d.structures import Pointclouds
-    from pytorch3d.vis.plotly_vis import plot_scene
-    from pytorch3d.renderer.cameras import (
-        PerspectiveCameras as PerspectiveCamerasVisual,
-    )
-except:
-    print("PyTorch3d is not available. Please disable visdom.")
+# except:
+#     print("PyTorch3d is not available. Please disable visdom.")
 
 
 class VGGSfMRunner:
@@ -1076,7 +1073,7 @@ def predict_tracks(
     fine_tracking,
     bound_bboxes=None,
     query_points_dict=None,
-    max_points_num=163840,
+    max_points_num=40000,
 ):
     """
     Predict tracks for the given images and masks.

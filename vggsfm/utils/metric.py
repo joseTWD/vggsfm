@@ -8,7 +8,7 @@ import random
 import numpy as np
 import torch
 
-from minipytorch3d.rotation_conversions import (
+from pytorch3d.transforms.rotation_conversions import (
     matrix_to_quaternion,
     quaternion_to_matrix,
 )
