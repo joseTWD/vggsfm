@@ -1,0 +1,36 @@
+version: "3.10"
+services:
+  vggsfm:
+    container_name: vggsfm
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - CUDA_ARCHITECTURES=native
+        - NUMBER_OF_CORES=2
+    volumes:
+      - "./shared:/root/shared/"
+      - "./data:/root/data/"
+      - "./src:/root/src/"
+      - "./vggsfm:/root/vggsfm/"
+      - "./requirements:/root/requirements/"
+      - "./.hydra:/root/.hydra/"
+      - "./assets:/root/assets/"
+      - "./cfgs:/root/cfgs/"
+      - "./examples:/root/examples/"
+      - "./dependency:/root/dependency/"
+      - "./demo.py:/root/demo.py"
+      - "./setup.py:/root/setup.py"
+      - "./README.md:/root/README.md"
+      - "./video_demo.py:/root/video_demo.py"
+    working_dir: /app
+    ipc: host
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
