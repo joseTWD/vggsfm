@@ -55,5 +55,11 @@ RUN git clone https://github.com/jytime/LightGlue.git dependency/LightGlue && \
     cd dependency/LightGlue && \
     python -m pip install -e .
 
+# Clonar el repositorio de PyTorch3D
+RUN git clone https://github.com/facebookresearch/pytorch3d.git /root/pytorch3d
+
+# Cambiar al directorio de PyTorch3D y realizar la instalación en modo editable
+WORKDIR /root/pytorch3d
+RUN pip install -e .
 
 
