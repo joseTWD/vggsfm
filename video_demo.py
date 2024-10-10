@@ -6,6 +6,7 @@
 
 
 import torch
+import time
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
@@ -85,10 +86,16 @@ def demo_fn(cfg: DictConfig):
     )
 
     print("Video Demo Finished Successfully")
-
+    recon = predictions["reconstruction"]
+    print("Compute mean track length:", recon.compute_mean_track_length())
     return True
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     with torch.no_grad():
         demo_fn()
+    end_time = time.time()
+
+    execution_time = end_time - start_time
+    print(f"El tiempo de ejecución fue: {execution_time:.2f} segundos")

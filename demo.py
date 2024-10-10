@@ -6,6 +6,7 @@
 
 
 import torch
+import time
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
@@ -44,7 +45,7 @@ def demo_fn(cfg: DictConfig):
         load_gt=cfg.load_gt,
     )
 
-    sequence_list = test_dataset.sequence_list
+    sequence_list = test_dataset.sequence_list 
 
     seq_name = sequence_list[0]  # Run on one Scene
 
@@ -77,12 +78,19 @@ def demo_fn(cfg: DictConfig):
         seq_name=seq_name,
         output_dir=output_dir,
     )
+    recon = predictions["reconstruction"]
 
     print("Demo Finished Successfully")
-
+    print("Reconstruction reprojection error:", recon.compute_mean_reprojection_error())
+    print("Reconstruction track length:", recon.compute_mean_track_length())
     return True
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     with torch.no_grad():
         demo_fn()
+    end_time = time.time()
+
+    execution_time = end_time - start_time
+    print(f"El tiempo de ejecución fue: {execution_time:.2f} segundos")
