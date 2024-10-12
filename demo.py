@@ -45,24 +45,18 @@ def demo_fn(cfg: DictConfig):
         load_gt=cfg.load_gt,
     )
 
-    sequence_list = test_dataset.sequence_list 
+    sequence_list = test_dataset.sequence_list
 
     seq_name = sequence_list[0]  # Run on one Scene
 
     # Load the data for the selected sequence
-    batch, image_paths = test_dataset.get_data(
-        sequence_name=seq_name, return_path=True
-    )
+    batch, image_paths = test_dataset.get_data(sequence_name=seq_name, return_path=True)
 
-    output_dir = batch[
-        "scene_dir"
-    ]  # which is also cfg.SCENE_DIR for DemoLoader
+    output_dir = batch["scene_dir"]  # which is also cfg.SCENE_DIR for DemoLoader
 
     images = batch["image"]
     masks = batch["masks"] if batch["masks"] is not None else None
-    crop_params = (
-        batch["crop_params"] if batch["crop_params"] is not None else None
-    )
+    crop_params = batch["crop_params"] if batch["crop_params"] is not None else None
 
     # Cache the original images for visualization, so that we don't need to re-load many times
     original_images = batch["original_images"]
@@ -78,11 +72,8 @@ def demo_fn(cfg: DictConfig):
         seq_name=seq_name,
         output_dir=output_dir,
     )
-    recon = predictions["reconstruction"]
+    print(predictions.keys())
 
-    print("Demo Finished Successfully")
-    print("Reconstruction reprojection error:", recon.compute_mean_reprojection_error())
-    print("Reconstruction track length:", recon.compute_mean_track_length())
     return True
 
 

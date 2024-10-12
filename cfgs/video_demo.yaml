@@ -19,7 +19,7 @@ grid_based_sample: False
 model_name: "vggsfm_v2_0_0"
 
 seed: 0
-img_size: 512
+img_size: 1024
 
 
 debug: False
@@ -63,9 +63,9 @@ shift_point2d_to_original_res: False
 
 make_reproj_video: False
 
-visual_tracks: False
+visual_tracks: True
 visual_query_points: False
-visual_dense_point_cloud: False
+visual_dense_point_cloud: True
 
 query_by_interval: False
 

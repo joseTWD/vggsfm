@@ -49,7 +49,7 @@ COPY requirements/vggsfm.txt /root/requirements/vggsfm.txt
 # Instalar dependencias desde el archivo requirements.txt
 RUN pip install -r requirements/vggsfm.txt
 
-WORKDIR /usr/local/src
+WORKDIR /root
 # Instalar LightGlue (opcional)
 RUN git clone https://github.com/jytime/LightGlue.git dependency/LightGlue && \
     cd dependency/LightGlue && \

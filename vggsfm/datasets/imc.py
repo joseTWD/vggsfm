@@ -17,7 +17,7 @@ from PIL import Image, ImageFile
 from torchvision import transforms
 from torch.utils.data import Dataset
 
-from minipytorch3d.cameras import PerspectiveCameras
+from pytorch3d.cameras import PerspectiveCameras
 
 from .camera_transform import (
     normalize_cameras,
@@ -57,37 +57,27 @@ class IMCDataset(Dataset):
         if split == "train":
             raise ValueError("We don't want to train on IMC")
         elif split == "test":
-            bag_names = glob.glob(
-                os.path.join(IMC_DIR, "*/set_100/sub_set/*.txt")
-            )
+            bag_names = glob.glob(os.path.join(IMC_DIR, "*/set_100/sub_set/*.txt"))
 
             if cfg.imc_scene_eight:
                 # In some settings, the scene london_bridge is removed from IMC
-                bag_names = [
-                    name for name in bag_names if "london_bridge" not in name
-                ]
+                bag_names = [name for name in bag_names if "london_bridge" not in name]
 
             for bag_name in bag_names:
-                parts = bag_name.split(
-                    "/"
-                )  # Split the string into parts by '/'
+                parts = bag_name.split("/")  # Split the string into parts by '/'
                 location = parts[-4]  # The location part is at index 5
                 bag_info = parts[-1].split(".")[
                     0
                 ]  # The bag info part is the last part, and remove '.txt'
-                new_bag_name = (
-                    f"{bag_info}_{location}"  # Format the new bag name
-                )
+                new_bag_name = f"{bag_info}_{location}"  # Format the new bag name
 
-                img_filenames = parse_file_to_list(
-                    bag_name, "/".join(parts[:-2])
-                )
+                img_filenames = parse_file_to_list(bag_name, "/".join(parts[:-2]))
                 filtered_data = []
 
                 for img_name in img_filenames:
-                    calib_file = img_name.replace(
-                        "images", "calibration"
-                    ).replace("jpg", "h5")
+                    calib_file = img_name.replace("images", "calibration").replace(
+                        "jpg", "h5"
+                    )
                     calib_file = "/".join(
                         calib_file.rsplit("/", 1)[:-1]
                         + ["calibration_" + calib_file.rsplit("/", 1)[-1]]
@@ -101,12 +91,8 @@ class IMCDataset(Dataset):
 
                     tvec = torch.from_numpy(np.copy(calib["T"]).reshape((3,)))
 
-                    fl = torch.from_numpy(
-                        np.stack([intri[0, 0], intri[1, 1]], axis=0)
-                    )
-                    pp = torch.from_numpy(
-                        np.stack([intri[0, 2], intri[1, 2]], axis=0)
-                    )
+                    fl = torch.from_numpy(np.stack([intri[0, 0], intri[1, 1]], axis=0))
+                    pp = torch.from_numpy(np.stack([intri[0, 2], intri[1, 2]], axis=0))
 
                     filtered_data.append(
                         {
@@ -182,9 +168,7 @@ class IMCDataset(Dataset):
         else:
             raise NotImplementedError("Do not train on IMC.")
 
-    def get_data(
-        self, index=None, sequence_name=None, ids=None, return_path=False
-    ):
+    def get_data(self, index=None, sequence_name=None, ids=None, return_path=False):
         if sequence_name is None:
             sequence_name = self.sequence_list[index]
 
@@ -274,13 +258,11 @@ class IMCDataset(Dataset):
             image = self._crop_image(image, bbox_jitter)
 
             # Resizing images
-            (new_focal_length, new_principal_point) = (
-                adjust_camera_to_image_scale_(
-                    focal_length_cropped,
-                    principal_point_cropped,
-                    torch.FloatTensor(image.size),
-                    torch.FloatTensor([self.img_size, self.img_size]),
-                )
+            (new_focal_length, new_principal_point) = adjust_camera_to_image_scale_(
+                focal_length_cropped,
+                principal_point_cropped,
+                torch.FloatTensor(image.size),
+                torch.FloatTensor([self.img_size, self.img_size]),
             )
 
             images_transformed.append(self.transform(image))

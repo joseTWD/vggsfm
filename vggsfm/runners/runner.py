@@ -6,6 +6,8 @@
 
 
 import os
+import json
+import h5py
 import sys
 import copy
 import torch
@@ -46,8 +48,7 @@ from vggsfm.utils.triangulation import triangulate_tracks
 from vggsfm.utils.triangulation_helpers import cam_from_img, filter_all_points3D
 from pytorch3d.structures import Pointclouds
 from pytorch3d.vis.plotly_vis import plot_scene
-from pytorch3d.renderer.cameras import (
-    PerspectiveCameras as PerspectiveCamerasVisual)
+from pytorch3d.renderer.cameras import PerspectiveCameras as PerspectiveCamerasVisual
 
 # Optional imports
 try:
@@ -234,22 +235,20 @@ class VGGSfMRunner:
 
             # Save the sparse reconstruction results
             if self.cfg.save_to_disk:
-                self.save_sparse_reconstruction(
-                    predictions, seq_name, output_dir
-                )
-                
+                self.save_sparse_reconstruction(predictions, seq_name, output_dir)
+
                 if predictions["additional_points_dict"] is not None:
                     additional_dir = os.path.join(output_dir, "additional")
                     os.makedirs(additional_dir, exist_ok=True)
-                    torch.save(predictions["additional_points_dict"], os.path.join(additional_dir, "additional_points_dict.pt"))
-
+                    torch.save(
+                        predictions["additional_points_dict"],
+                        os.path.join(additional_dir, "additional_points_dict.pt"),
+                    )
 
             # Extract sparse depth and point information if needed for further processing
             if self.cfg.dense_depth or self.cfg.make_reproj_video:
-                predictions = (
-                    self.extract_sparse_depth_and_point_from_reconstruction(
-                        predictions
-                    )
+                predictions = self.extract_sparse_depth_and_point_from_reconstruction(
+                    predictions
                 )
 
             # Perform dense reconstruction if enabled
@@ -260,9 +259,7 @@ class VGGSfMRunner:
 
                 # Save the dense depth maps
                 if self.cfg.save_to_disk:
-                    self.save_dense_depth_maps(
-                        predictions["depth_dict"], output_dir
-                    )
+                    self.save_dense_depth_maps(predictions["depth_dict"], output_dir)
 
             # Create reprojection video if enabled
             if self.cfg.make_reproj_video:
@@ -327,9 +324,7 @@ class VGGSfMRunner:
         print(f"Run Sparse Reconstruction for Scene {seq_name}")
         batch_num, frame_num, image_dim, height, width = images.shape
         device = images.device
-        reshaped_image = images.reshape(
-            batch_num * frame_num, image_dim, height, width
-        )
+        reshaped_image = images.reshape(batch_num * frame_num, image_dim, height, width)
         visual_dir = os.path.join(output_dir, "visuals")
 
         if dtype is None:
@@ -376,8 +371,7 @@ class VGGSfMRunner:
 
                 # Also update query_frame_indexes:
                 query_frame_indexes = [
-                    center_frame_index if x == 0 else x
-                    for x in query_frame_indexes
+                    center_frame_index if x == 0 else x for x in query_frame_indexes
                 ]
                 query_frame_indexes[0] = 0
 
@@ -395,9 +389,9 @@ class VGGSfMRunner:
                 query_indices=query_frame_indexes,
             )
         else:
-            pred_cameras = self.camera_predictor(
-                reshaped_image, batch_size=batch_num
-            )["pred_cameras"]
+            pred_cameras = self.camera_predictor(reshaped_image, batch_size=batch_num)[
+                "pred_cameras"
+            ]
 
         # Prepare image feature maps for tracker
         fmaps_for_tracker = self.track_predictor.process_images_to_fmaps(images)
@@ -462,9 +456,7 @@ class VGGSfMRunner:
             pred_vis = pred_vis * force_vis.float()
 
         if self.cfg.use_poselib:
-            estimate_preliminary_cameras_fn = (
-                estimate_preliminary_cameras_poselib
-            )
+            estimate_preliminary_cameras_fn = estimate_preliminary_cameras_poselib
         else:
             estimate_preliminary_cameras_fn = estimate_preliminary_cameras
 
@@ -510,9 +502,8 @@ class VGGSfMRunner:
                 camera_type=self.cfg.camera_type,
             )
 
-        
         additional_points_dict = None
-        
+
         if self.cfg.extra_pt_pixel_interval > 0:
             additional_points_dict = self.triangulate_extra_points(
                 images,
@@ -554,11 +545,9 @@ class VGGSfMRunner:
                         pycolmap.Track(),
                         additional_points3D_rgb_numpy[extra_point_idx],
                     )
-                    
+
                 points3D = torch.cat([points3D, additional_points3D], dim=0)
-                points3D_rgb = torch.cat(
-                    [points3D_rgb, additional_points3D_rgb], dim=0
-                )
+                points3D_rgb = torch.cat([points3D_rgb, additional_points3D_rgb], dim=0)
 
         if self.cfg.filter_invalid_frame:
             extrinsics_opencv = extrinsics_opencv[valid_frame_mask]
@@ -584,7 +573,6 @@ class VGGSfMRunner:
             if pred_score is not None:
                 pred_score = pred_score[:, center_order]
 
-
         if back_to_original_resolution:
             reconstruction = self.rename_colmap_recons_and_rescale_camera(
                 reconstruction,
@@ -606,9 +594,9 @@ class VGGSfMRunner:
                 pyimg = reconstruction.images[fname_to_id[fname]]
                 pycam = reconstruction.cameras[pyimg.camera_id]
                 intrinsics_original_res.append(pycam.calibration_matrix())
-            intrinsics_opencv = torch.from_numpy(
-                np.stack(intrinsics_original_res)
-            ).to(device)
+            intrinsics_opencv = torch.from_numpy(np.stack(intrinsics_original_res)).to(
+                device
+            )
 
         predictions["extrinsics_opencv"] = extrinsics_opencv
         # NOTE! If not back_to_original_resolution, then intrinsics_opencv
@@ -624,9 +612,9 @@ class VGGSfMRunner:
         predictions["pred_vis"] = pred_vis
         predictions["pred_score"] = pred_score
         predictions["valid_tracks"] = valid_tracks
-        
+
         predictions["additional_points_dict"] = additional_points_dict
-        
+
         return predictions
 
     def triangulate_extra_points(
@@ -679,11 +667,7 @@ class VGGSfMRunner:
                 self.cfg.max_query_pts,
                 self.track_predictor,
                 images[:, neighbor_start:neighbor_end],
-                (
-                    masks[:, neighbor_start:neighbor_end]
-                    if masks is not None
-                    else masks
-                ),
+                (masks[:, neighbor_start:neighbor_end] if masks is not None else masks),
                 fmaps_for_tracker[:, neighbor_start:neighbor_end],
                 [rel_frame_idx],
                 fine_tracking=False,
@@ -862,9 +846,7 @@ class VGGSfMRunner:
 
         return img_with_circles_list
 
-    def save_reprojection_video(
-        self, img_with_circles_list, video_size, output_dir
-    ):
+    def save_reprojection_video(self, img_with_circles_list, video_size, output_dir):
         """
         Save the reprojection video to disk.
 
@@ -881,9 +863,7 @@ class VGGSfMRunner:
             video_size,
         )
 
-    def save_sparse_reconstruction(
-        self, predictions, seq_name=None, output_dir=None
-    ):
+    def save_sparse_reconstruction(self, predictions, seq_name=None, output_dir=None):
         """
         Save the reconstruction results in COLMAP format.
 
@@ -901,15 +881,11 @@ class VGGSfMRunner:
 
         sfm_output_dir = os.path.join(output_dir, "sparse")
         print("-" * 50)
-        print(
-            f"The output has been saved in COLMAP style at: {sfm_output_dir} "
-        )
+        print(f"The output has been saved in COLMAP style at: {sfm_output_dir} ")
         os.makedirs(sfm_output_dir, exist_ok=True)
         reconstruction_pycolmap.write(sfm_output_dir)
 
-    def visualize_3D_in_visdom(
-        self, predictions, seq_name=None, output_dir=None
-    ):
+    def visualize_3D_in_visdom(self, predictions, seq_name=None, output_dir=None):
         """
         This function takes the predictions from the reconstruction process and visualizes
         the 3D point cloud and camera positions in Visdom. It handles both sparse and dense
@@ -974,9 +950,7 @@ class VGGSfMRunner:
 
         self.viz.plotlyplot(fig, env=env_name, win="3D")
 
-    def visualize_3D_in_gradio(
-        self, predictions, seq_name=None, output_dir=None
-    ):
+    def visualize_3D_in_gradio(self, predictions, seq_name=None, output_dir=None):
         from vggsfm.utils.gradio import (
             vggsfm_predictions_to_glb,
             visualize_by_gradio,
@@ -1136,9 +1110,8 @@ def predict_tracks(
 
         # Switch so that query_index frame stays at the first frame
         # This largely simplifies the code structure of tracker
-        new_order = calculate_index_mappings(
-            query_index, frame_num, device=device
-        )
+
+        new_order = calculate_index_mappings(query_index, frame_num, device=device)
         images_feed, fmaps_feed = switch_tensor_order(
             [images, fmaps_for_tracker], new_order
         )
@@ -1146,14 +1119,14 @@ def predict_tracks(
         all_points_num = images_feed.shape[1] * max_query_pts
 
         if all_points_num > max_points_num:
-            print('Predict tracks in chunks to fit in memory')
+            print("Predict tracks in chunks to fit in memory")
 
             # Split query_points into smaller chunks to avoid memory issues
             all_points_num = images_feed.shape[1] * query_points.shape[1]
-            
+
             shuffle_indices = torch.randperm(query_points.size(1))
             query_points = query_points[:, shuffle_indices]
-            
+
             num_splits = (all_points_num + max_points_num - 1) // max_points_num
             fine_pred_track, pred_vis, pred_score = predict_tracks_in_chunks(
                 track_predictor,
@@ -1182,9 +1155,59 @@ def predict_tracks(
         pred_vis_list.append(pred_vis)
         pred_score_list.append(pred_score)
 
+    output_file_name_query = "query_points.h5"
+    query_points_np = query_points.cpu().numpy()  # Convertir a numpy antes de guardar
+    with h5py.File(output_file_name_query, "w") as h5_file:
+        h5_file.create_dataset("query_points", data=query_points_np)
+    print(f"Query points saved to {output_file_name_query}")
+
     pred_track = torch.cat(pred_track_list, dim=2)
     pred_vis = torch.cat(pred_vis_list, dim=2)
     pred_score = torch.cat(pred_score_list, dim=2)
+    output_file_match = "matches.h5"
+    with h5py.File(output_file_match, "w") as h5_file:
+        # Convierte el tensor de imágenes a numpy
+        images_feed_np = images_feed.cpu().numpy()
+
+        # Crea un dataset para las imágenes y guarda
+        h5_file.create_dataset("images", data=images_feed_np)
+
+        # Guarda las predicciones de los tracks (keypoints en 2D)
+        fine_pred_track_np = fine_pred_track.cpu().numpy()
+        h5_file.create_dataset("tracks", data=fine_pred_track_np)
+
+        # Guarda la visibilidad de los keypoints
+        pred_vis_np = pred_vis.cpu().numpy()
+        h5_file.create_dataset("visibility", data=pred_vis_np)
+
+        # Ahora extrae y guarda los matches, si los hay
+        matches = []
+        for i in range(fine_pred_track.shape[1]):  # Itera sobre los keypoints
+            visible_points = pred_vis[:, i].nonzero(as_tuple=True)[
+                0
+            ]  # Encuentra los frames donde el keypoint es visible
+            track = (
+                fine_pred_track[:, i, :].cpu().numpy()
+            )  # Coordenadas de los keypoints
+
+            if (
+                len(visible_points) > 1
+            ):  # Solo guarda si hay correspondencia entre más de un frame
+                match_info = {
+                    "keypoint_index": i,
+                    "frames": visible_points.tolist(),
+                    "keypoints": track[
+                        visible_points
+                    ].tolist(),  # Coordenadas de los puntos visibles
+                }
+                matches.append(match_info)
+
+        # Guarda los matches como un dataset de tipo string (en formato JSON para fácil acceso)
+
+        matches_json = json.dumps(matches)
+        h5_file.create_dataset("matches", data=matches_json)
+
+    print(f"Datos guardados en {output_file_match}")
 
     return pred_track, pred_vis, pred_score
 
@@ -1369,17 +1392,13 @@ def get_query_points(
                 max_num_keypoints=max_query_num, detection_threshold=det_thres
             )
         else:
-            raise NotImplementedError(
-                f"query method {method} is not supprted now"
-            )
+            raise NotImplementedError(f"query method {method} is not supprted now")
         extractor = extractor.cuda().eval()
         invalid_mask = None
 
         if bound_bbox is not None:
             x_min, y_min, x_max, y_max = map(int, bound_bbox[0])
-            bbox_valid_mask = torch.zeros_like(
-                query_image[:, 0], dtype=torch.bool
-            )
+            bbox_valid_mask = torch.zeros_like(query_image[:, 0], dtype=torch.bool)
             bbox_valid_mask[:, y_min:y_max, x_min:x_max] = 1
             invalid_mask = ~bbox_valid_mask
 
@@ -1391,17 +1410,15 @@ def get_query_points(
                 else torch.logical_or(invalid_mask, seg_invalid_mask)
             )
 
-        query_points = extractor.extract(
-            query_image, invalid_mask=invalid_mask
-        )["keypoints"]
+        query_points = extractor.extract(query_image, invalid_mask=invalid_mask)[
+            "keypoints"
+        ]
         pred_points.append(query_points)
 
     query_points = torch.cat(pred_points, dim=1)
 
     if query_points.shape[1] > max_query_num:
-        random_point_indices = torch.randperm(query_points.shape[1])[
-            :max_query_num
-        ]
+        random_point_indices = torch.randperm(query_points.shape[1])[:max_query_num]
         query_points = query_points[:, random_point_indices, :]
-
+    # selecciona los keypoints correspondientes a los índices aleatorios que se generaron si se excede el max
     return query_points
