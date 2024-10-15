@@ -6,7 +6,9 @@
 
 
 import torch
+import h5py
 import time
+import numpy as np
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
@@ -73,6 +75,12 @@ def demo_fn(cfg: DictConfig):
         output_dir=output_dir,
     )
     print(predictions.keys())
+
+    print("track", predictions["pred_track"].shape)
+    print(predictions["pred_track"])
+    print("3D points", predictions["points3D"].shape)
+    print(predictions["points3D"])
+    print("Additional points:", predictions["additional_points_dict"])
 
     return True
 

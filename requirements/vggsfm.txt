@@ -6,6 +6,7 @@ opencv-python
 einops
 visdom
 tqdm
+h5py
 scipy
 plotly
 scikit-learn
