@@ -74,13 +74,6 @@ def demo_fn(cfg: DictConfig):
         seq_name=seq_name,
         output_dir=output_dir,
     )
-    print(predictions.keys())
-
-    print("track", predictions["pred_track"].shape)
-    print(predictions["pred_track"])
-    print("3D points", predictions["points3D"].shape)
-    print(predictions["points3D"])
-    print("Additional points:", predictions["additional_points_dict"])
 
     return True
 

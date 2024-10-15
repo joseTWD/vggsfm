@@ -7,7 +7,6 @@
 
 import os
 import json
-import h5py
 import sys
 import copy
 import torch
@@ -1155,59 +1154,9 @@ def predict_tracks(
         pred_vis_list.append(pred_vis)
         pred_score_list.append(pred_score)
 
-    output_file_name_query = "query_points.h5"
-    query_points_np = query_points.cpu().numpy()  # Convertir a numpy antes de guardar
-    with h5py.File(output_file_name_query, "w") as h5_file:
-        h5_file.create_dataset("query_points", data=query_points_np)
-    print(f"Query points saved to {output_file_name_query}")
-
     pred_track = torch.cat(pred_track_list, dim=2)
     pred_vis = torch.cat(pred_vis_list, dim=2)
     pred_score = torch.cat(pred_score_list, dim=2)
-    output_file_match = "matches.h5"
-    with h5py.File(output_file_match, "w") as h5_file:
-        # Convierte el tensor de imágenes a numpy
-        images_feed_np = images_feed.cpu().numpy()
-
-        # Crea un dataset para las imágenes y guarda
-        h5_file.create_dataset("images", data=images_feed_np)
-
-        # Guarda las predicciones de los tracks (keypoints en 2D)
-        fine_pred_track_np = fine_pred_track.cpu().numpy()
-        h5_file.create_dataset("tracks", data=fine_pred_track_np)
-
-        # Guarda la visibilidad de los keypoints
-        pred_vis_np = pred_vis.cpu().numpy()
-        h5_file.create_dataset("visibility", data=pred_vis_np)
-
-        # Ahora extrae y guarda los matches, si los hay
-        matches = []
-        for i in range(fine_pred_track.shape[1]):  # Itera sobre los keypoints
-            visible_points = pred_vis[:, i].nonzero(as_tuple=True)[
-                0
-            ]  # Encuentra los frames donde el keypoint es visible
-            track = (
-                fine_pred_track[:, i, :].cpu().numpy()
-            )  # Coordenadas de los keypoints
-
-            if (
-                len(visible_points) > 1
-            ):  # Solo guarda si hay correspondencia entre más de un frame
-                match_info = {
-                    "keypoint_index": i,
-                    "frames": visible_points.tolist(),
-                    "keypoints": track[
-                        visible_points
-                    ].tolist(),  # Coordenadas de los puntos visibles
-                }
-                matches.append(match_info)
-
-        # Guarda los matches como un dataset de tipo string (en formato JSON para fácil acceso)
-
-        matches_json = json.dumps(matches)
-        h5_file.create_dataset("matches", data=matches_json)
-
-    print(f"Datos guardados en {output_file_match}")
 
     return pred_track, pred_vis, pred_score
 
